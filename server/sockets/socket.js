@@ -6,27 +6,28 @@ const { crearMensaje } = require('../utilidades.js/utilidades');
 const usuarios = new Usuarios();
 
 io.on('connection', (client) => {
-    client.on('entrarChat', ( usuario, callback )=>{
-        if (!usuario.nombre) {
+    client.on('entrarChat', ( data, callback )=>{
+        if (!data.nombre || !data.sala) {
             return callback({
                 error: true,
-                mensaje: 'Parametro nombre es obligatorio'
+                mensaje: 'Parametro nombre/sala es obligatorio'
             });
         }
-        let personas = usuarios.agregarPersona(client.id, usuario.nombre);
-        client.broadcast.emit('listaPersona', usuarios.getPersonas());
-        callback(personas);
+        client.join(data.sala);
+        usuarios.agregarPersona(client.id, data.nombre, data.sala);
+        client.broadcast.to(data.sala).emit('listaPersona', usuarios.getPersonasPorSala(data.sala));
+        callback(usuarios.getPersonasPorSala(data.sala));
     });
     client.on('crearMensaje', (data)=>{
         let persona = usuarios.getPersona(client.id);
         let mensaje = crearMensaje(persona.nombre, data.mensaje);
-        client.broadcast.emit('crearMensaje', mensaje);
+        client.broadcast.to(persona.sala).emit('crearMensaje', mensaje);
     })
     
     client.on('disconnect', ()=>{
         let personaBorrada = usuarios.borrarPersona(client.id);
-        client.broadcast.emit('crearMensaje', crearMensaje('Admin', `${personaBorrada.nombre} salió`));
-        client.broadcast.emit('listaPersona', usuarios.getPersonas());
+        client.broadcast.to(personaBorrada.sala).emit('crearMensaje', crearMensaje('Admin', `${personaBorrada.nombre} salió`));
+        client.broadcast.to(personaBorrada.sala).emit('listaPersona', usuarios.getPersonasPorSala(personaBorrada.sala));
 
     });
     client.on('mensajePrivado', data => {
