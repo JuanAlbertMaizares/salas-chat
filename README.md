@@ -1,9 +1,11 @@
-# Notas:
-
-Este es un pequeño servidor de express listo para ejecutarse y servir la carpeta public en la web.
-
-Recuerden que deben de reconstruir los módulos de node con el comando
+# Chat con Socket.IO y ExpressJS
+### Chat realizado con ExpressJS y Socket.IO
+### 
 
 ```
 npm install
 ```
+
+## Deploy Heroku
+
+[Heroku Maizares-Socket Chat](https://maizares-chat-sockets.herokuapp.com/)
